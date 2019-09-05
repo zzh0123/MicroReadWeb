@@ -1,7 +1,9 @@
 package com.zhenhua.microread.entity;
 
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -94,6 +96,16 @@ public class Share implements Serializable {
      *
      * @mbg.generated
      */
+    private List<String> imgList;
+
+    public List<String> getImgList() {
+        return imgList;
+    }
+
+    public void setImgList(List<String> imgList) {
+        this.imgList = imgList;
+    }
+
     private static final long serialVersionUID = 1L;
 
     /**

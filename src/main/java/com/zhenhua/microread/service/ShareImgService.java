@@ -26,4 +26,8 @@ public class ShareImgService {
         return count;
     }
 
+    public List<String> getShareImgList(String shareId){
+        List<String> imgList = mapper.getShareImgList(shareId);
+        return imgList;
+    }
 }

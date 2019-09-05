@@ -70,7 +70,8 @@ public class UserController {
         Result result = null;
         System.out.println("--login--");
         System.out.println("--vcode--" + vcode+ "--code--" + code);
-        if (code.equals(vcode)) {
+        User userGet = service.getUserById(phoneNum);
+        if (code.equals(vcode) && userGet == null) {
             User user = new User();
             user.setUserId(phoneNum);
             user.setUserName(phoneNum);
@@ -82,10 +83,13 @@ public class UserController {
 //        user.setUserType(1);
 //        user.setVipLevel(1);
             result = service.insertUser(user);
+        } else if (code.equals(vcode) && userGet != null) {
+            result = ResultUtil.getInsertResult(userGet);
         } else {
             result = ResultUtil.getInsertResult(null);
         }
 
         return result;
     }
+
 }

@@ -7,6 +7,9 @@ import com.zhenhua.microread.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Id;
+import java.util.List;
+
 /**
  * @author zzh
  * @create 2019-08-24 13:39
@@ -35,8 +38,14 @@ public class ShareService {
         return count;
     }
 
-//    public Result getShareList(){
-//        Result result = null;
-//        mapper.s
-//    }
+    public List<Share> getShareList(String userId){
+        List<Share> shareList = mapper.getShareList(userId);
+        return shareList;
+    }
+
+    public List<Share> selectAll(String userId){
+        List<Share> shareList = mapper.selectAll();
+        return shareList;
+    }
+
 }

@@ -12,7 +12,7 @@ public class ResultUtil {
     public static Result getSearchResult(Object object){
         Result result = new Result();
         if (object != null){
-            result.setCode(200);
+            result.setCode(800);
             result.setMessage("查询成功！");
             result.setData(object);
         } else {
@@ -26,7 +26,7 @@ public class ResultUtil {
     public static Result getInsertResult(Object object){
         Result result = new Result();
         if (object != null){
-            result.setCode(200);
+            result.setCode(800);
             result.setMessage("插入成功！");
             result.setData(object);
         } else {

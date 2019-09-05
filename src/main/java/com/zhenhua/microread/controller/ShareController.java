@@ -1,12 +1,15 @@
 package com.zhenhua.microread.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import com.zhenhua.microread.entity.Result;
 import com.zhenhua.microread.entity.Share;
 import com.zhenhua.microread.entity.ShareImg;
 import com.zhenhua.microread.service.ShareImgService;
 import com.zhenhua.microread.service.ShareService;
 import com.zhenhua.microread.util.DateUtil;
+import com.zhenhua.microread.util.ResultUtil;
+import com.zhenhua.microread.util.URLConstant;
 import com.zhenhua.microread.util.UUIDUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +79,14 @@ public class ShareController {
         return "multiUpload";
     }
 
+    /**
+     * 发布分享
+     * @param userId
+     * @param content
+     * @param typeList
+     * @param request
+     * @return
+     */
     @PostMapping("/multiUpload")
     @ResponseBody
     public Result multiUpload(
@@ -98,37 +109,44 @@ public class ShareController {
 
         List<MultipartFile> files = ((MultipartHttpServletRequest) request).getFiles("file");
         LOGGER.info("--files-size-" + files.size());
-        String filePath = "D:\\web_workspace\\microread\\src\\main\\webapp\\WEB-INF\\imgs\\"
-                + userId + DateUtil.getStringAllDate();
+        String dateStr = DateUtil.getStringAllDate();
+        String filePath = "D:\\web_workspace\\microread_images\\"
+                + userId + "\\" + dateStr + "\\";
         List<ShareImg> shareImgList = new ArrayList<ShareImg>();
 
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
-            if (file.isEmpty()) {
-                result.setMessage("上传第" + (i++) + "个文件失败");
-                return result;
-            }
-            String fileName = file.getOriginalFilename();
+        File file1 = new File(filePath);
+        boolean s = file1.mkdirs();
+        LOGGER.info("--s--" + s);
+        if (files != null && files.size() > 0){
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile file = files.get(i);
+                if (file.isEmpty()) {
+                    result.setMessage("上传第" + (i++) + "个文件失败");
+                    return result;
+                }
+                String fileName = file.getOriginalFilename();
 
-            File dest = new File(filePath + fileName);
-            try {
-                file.transferTo(dest);
-                String imgUrl = dest.getAbsolutePath();
-                LOGGER.info("--imgUrl--" + imgUrl);
-                ShareImg shareImg = new ShareImg();
-                shareImg.setImgId(UUIDUtil.getUUID());
-                shareImg.setImgType(list_data.get(i));
-                shareImg.setImgUrl("http://192.168.3.75:8080" + imgUrl);
-                shareImg.setShareId(shareId);
-                shareImgList.add(shareImg);
-                LOGGER.info("--shareImgList000--" + shareImgList.size());
-                LOGGER.info("第" + (i + 1) + "个文件上传成功");
-            } catch (IOException e) {
-                LOGGER.error(e.toString(), e);
-                result.setMessage("上传第" + (i++) + "个文件失败");
-                return result;
+                File dest = new File(filePath + fileName);
+                try {
+                    file.transferTo(dest);
+                    String imgUrl = dest.getAbsolutePath();
+                    LOGGER.info("--imgUrl--" + imgUrl);
+                    ShareImg shareImg = new ShareImg();
+                    shareImg.setImgId(UUIDUtil.getUUID());
+                    shareImg.setImgType(list_data.get(i));
+                    shareImg.setImgUrl(URLConstant.BASE_URL + "/images/" + userId + "/" + dateStr + "/"+ fileName);
+                    shareImg.setShareId(shareId);
+                    shareImgList.add(shareImg);
+                    LOGGER.info("--shareImgList000--" + shareImgList.size());
+                    LOGGER.info("第" + (i + 1) + "个文件上传成功");
+                } catch (IOException e) {
+                    LOGGER.error(e.toString(), e);
+                    result.setMessage("上传第" + (i++) + "个文件失败");
+                    return result;
+                }
             }
         }
+
 
         share.setShareId(shareId);
         share.setUserId(userId);
@@ -142,8 +160,8 @@ public class ShareController {
             imgListCount = shareImgService.insertShareImgList(shareImgList);
         }
 
-        if (shareCount != null && imgListCount != null) {
-            result.setCode(200);
+        if (shareCount != null || imgListCount != null) {
+            result.setCode(800);
 //            result.setData(share);
             result.setMessage("上传成功！");
         } else {
@@ -152,6 +170,35 @@ public class ShareController {
 
         return result;
 
+    }
+
+    /**
+     * 获取分享列表
+     * @param userId
+     * @param type
+     * @param type
+     * @return
+     */
+    @GetMapping("/getShareList")
+    @ResponseBody
+    public Result getShareList(@RequestParam(value = "userId", required = true) String userId,
+                           @RequestParam(value = "type", defaultValue = "001") String type,
+                               @RequestParam(defaultValue = "1") int pageNum,
+                               @RequestParam(defaultValue = "5") int pageSize){
+        PageHelper.startPage(pageNum,pageSize);
+        Result result = null;
+//        List<Share> shareList = shareService.getShareList(userId);
+        List<Share> shareList = shareService.selectAll(userId);
+//        LOGGER.info("--shareList--" + shareList.size());
+        for (int i = 0; i < shareList.size(); i++){
+            String shareId = shareList.get(i).getShareId();
+//            LOGGER.info("--shareId--" + shareId);
+            List<String> shareImgList = shareImgService.getShareImgList(shareId);
+//            LOGGER.info("--shareImgList--" + shareImgList.size());
+            shareList.get(i).setImgList(shareImgList);
+        }
+        result = ResultUtil.getSearchResult(shareList);
+        return result;
     }
 
     @PostMapping("/test")

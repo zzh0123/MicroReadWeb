@@ -26,12 +26,18 @@ public class UserService {
      * @auther: zzh
      * @date: 2019-08-18 22:09
      */
-    public Result getUserById(String userId){
+    public Result getUserResultById(String userId){
         Result result = null;
         User user = null;
         user = mapper.selectByPrimaryKey(userId);
         result = ResultUtil.getSearchResult(user);
         return result;
+    }
+
+    public User getUserById(String userId){
+        User user = null;
+        user = mapper.selectByPrimaryKey(userId);
+        return user;
     }
 
     /**
